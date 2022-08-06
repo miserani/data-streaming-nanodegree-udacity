@@ -1,0 +1,27 @@
+{
+  "namespace": "com.udacity",
+  "type": "record",
+  "name": "station.value",
+  "fields": [
+    {
+      "name": "station_id",
+      "type": "int"
+    },
+    {
+      "name": "name",
+      "type": "string"
+    },
+    {
+      "name": "color",
+      "type": "string"
+    },
+    {
+      "name": "direction_a",
+      "type": "string"
+    },
+    {
+      "name": "direction_b",
+      "type": "string"
+    }
+  ]
+}
