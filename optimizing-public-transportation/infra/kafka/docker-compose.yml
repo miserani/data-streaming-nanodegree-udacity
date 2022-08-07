@@ -68,6 +68,7 @@ services:
       KSQL_BOOTSTRAP_SERVERS: broker:9092
       KSQL_KSQL_LOGGING_PROCESSING_STREAM_AUTO_CREATE: "true"
       KSQL_KSQL_LOGGING_PROCESSING_TOPIC_AUTO_CREATE: "true"
+      KSQL_KSQL_SCHEMA_REGISTRY_URL: http://schema-registry:8081/
 
   ksqldb-cli:
     platform: linux/arm64
@@ -88,7 +89,7 @@ services:
       KAFKA_REST_BOOTSTRAP_SERVERS: PLAINTEXT://broker:9092
       KAFKA_REST_LISTENERS: http://0.0.0.0:8082/
       KAFKA_REST_HOST_NAME: rest-proxy
-      KAFKA_REST_SCHEMA_REGISTRY_URL: http://0.0.0.0:8081/
+      KAFKA_REST_SCHEMA_REGISTRY_URL: http://schema-registry:8081/
     depends_on:
       - broker
       - schema-registry
@@ -108,9 +109,9 @@ services:
       CONNECT_INTERNAL_KEY_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
       CONNECT_INTERNAL_VALUE_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
       CONNECT_KEY_CONVERTER: "io.confluent.connect.avro.AvroConverter"
-      CONNECT_KEY_CONVERTER_SCHEMA_REGISTRY_URL: http://0.0.0.0:8081/
+      CONNECT_KEY_CONVERTER_SCHEMA_REGISTRY_URL: http://schema-registry:8081/
       CONNECT_VALUE_CONVERTER: "io.confluent.connect.avro.AvroConverter"
-      CONNECT_VALUE_CONVERTER_SCHEMA_REGISTRY_URL: http://0.0.0.0:8081/
+      CONNECT_VALUE_CONVERTER_SCHEMA_REGISTRY_URL: http://schema-registry:8081/
       CONNECT_CONFIG_STORAGE_TOPIC: "connect-config"
       CONNECT_OFFSET_STORAGE_TOPIC: "connect-offset"
       CONNECT_STATUS_STORAGE_TOPIC: "connect-status"
@@ -124,17 +125,18 @@ services:
   postgres:
     image: postgres:13
     environment:
-      POSTGRES_USER: guest
-      POSTGRES_PASSWORD: guest
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
       POSTGRES_DB: cta
     volumes:
       - db-data-dags:/var/lib/postgresql/data
       - ./data/cta_stations.csv:/tmp/cta_stations.csv
       - ./data/load_stations.sql:/docker-entrypoint-initdb.d/load_stations.sql
+      - ./data/init-user-db.sh:/docker-entrypoint-initdb.d/init-user-db.sh
     ports:
       - 5432:5432
     healthcheck:
-      test: [ "CMD", "pg_isready", "-U", "airflow" ]
+      test: [ "CMD", "pg_isready", "-U", "guest" ]
       interval: 5s
       retries: 5
     restart: always
