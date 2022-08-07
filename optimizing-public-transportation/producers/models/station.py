@@ -50,13 +50,13 @@ class Station(Producer):
             topic=self.topic_name,
             key={"timestamp": self.time_millis()},
             value={
-                "station_id": int(self.station_id),
+                "station_id": self.station_id,
                 "train_id": train.train_id,
                 "direction": direction,
-                "line": str(self.color),
-                "train_status": str(train.status),
-                "prev_station_id": str(prev_station_id) if prev_station_id else None,
-                "prev_direction": str(prev_direction) if prev_direction else None,
+                "line": self.color.name,
+                "train_status": train.status.name,
+                "prev_station_id": prev_station_id,
+                "prev_direction": prev_direction,
             },
         )
 
