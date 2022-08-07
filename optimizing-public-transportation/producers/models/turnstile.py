@@ -40,9 +40,9 @@ class Turnstile(Producer):
     def run(self, timestamp, time_step):
         """Simulates riders entering through the turnstile."""
         num_entries = self.turnstile_hardware.get_entries(timestamp, time_step)
-        logger.info("turnstile kafka integration incomplete - skipping")
+        if num_entries == 0:
+            logger.info("turnstile kafka integration incomplete. num entries 0 - skipping")
 
-        logger.info("arrival kafka integration incomplete - skipping")
         while num_entries > 0:
             self.producer.produce(
                 topic=self.topic_name,

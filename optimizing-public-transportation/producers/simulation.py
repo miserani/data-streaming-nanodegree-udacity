@@ -4,7 +4,6 @@ producers
 import datetime
 import time
 from enum import IntEnum
-import logging
 import logging.config
 from pathlib import Path
 

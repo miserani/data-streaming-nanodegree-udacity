@@ -5,6 +5,7 @@ import logging
 from pathlib import Path
 import random
 import urllib.parse
+from urllib.error import HTTPError
 
 import requests
 
@@ -65,7 +66,6 @@ class Weather(Producer):
 
     def run(self, month):
         self._set_weather(month)
-        logger.info("weather kafka proxy integration incomplete - skipping")
         value_ = {
             "temperature": float(self.temp),
             "status": int(self.status),
@@ -76,7 +76,10 @@ class Weather(Producer):
             headers={"Content-Type": "application/vnd.kafka.avro.v2+json"},
             data=json.dumps(data),
         )
-        resp.raise_for_status()
+        try:
+            resp.raise_for_status()
+        except HTTPError as e:
+            logger.error("weather kafka proxy integration incomplete - skipping", e)
 
         logger.debug(
             "sent weather data to kafka, temp: %s, status: %s",
