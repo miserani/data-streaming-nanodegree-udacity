@@ -31,8 +31,8 @@ class Station(Producer):
         super().__init__(
             topic_name,
             key_schema=Station.key_schema,
-            value_schema=Station.value_schema,  # TODO: Uncomment once schema is defined
-            num_partitions=3,
+            value_schema=Station.value_schema,
+            num_partitions=1,
         )
 
         self.station_id = int(station_id)
@@ -45,7 +45,7 @@ class Station(Producer):
 
     def run(self, train, direction, prev_station_id, prev_direction):
         """Simulates train arrivals at this station"""
-        logger.info("arrival kafka integration incomplete - skipping")
+        logger.info(f"run producer topic {self.topic_name}")
         self.producer.produce(
             topic=self.topic_name,
             key={"timestamp": self.time_millis()},

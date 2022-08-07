@@ -3,14 +3,19 @@ import logging
 import time
 
 
-from confluent_kafka import avro
+from confluent_kafka import avro, KafkaException
 from confluent_kafka.admin import AdminClient, NewTopic
 from confluent_kafka.avro import AvroProducer
 
 logger = logging.getLogger(__name__)
 
-SCHEMA_REGISTRY_URL = "http://schema-registry:8081"
+SCHEMA_REGISTRY_URL = "http://localhost:8081"
 BROKER_URL = "PLAINTEXT://localhost:29092"
+
+
+def is_topic_exists(client, topic):
+    topic_metadata = client.list_topics(timeout=2)
+    return topic in set(t.topic for t in iter(topic_metadata.topics.values()))
 
 
 class Producer:
@@ -26,6 +31,7 @@ class Producer:
         value_schema=None,
         num_partitions=1,
         num_replicas=1,
+        auto_create=False,
     ):
         """Initializes a Producer object with basic settings"""
         self.topic_name = topic_name
@@ -37,7 +43,7 @@ class Producer:
         self.broker_properties = {
             "bootstrap.servers": BROKER_URL,
             "schema.registry": SCHEMA_REGISTRY_URL,
-            "auto.create.topics.enable": False,
+            "auto.create.topics.enable": auto_create,
         }
 
         self.client = AdminClient({"bootstrap.servers": BROKER_URL})
@@ -47,10 +53,11 @@ class Producer:
             self.create_topic()
             Producer.existing_topics.add(self.topic_name)
 
-        # TODO: Configure the AvroProducer
         self.producer: AvroProducer = AvroProducer(
-            {"bootstrap.servers": BROKER_URL},
-            schema_registry=SCHEMA_REGISTRY_URL,
+            {
+                "bootstrap.servers": BROKER_URL,
+                "schema.registry.url": SCHEMA_REGISTRY_URL,
+            },
             default_key_schema=self.key_schema,
             default_value_schema=self.value_schema,
         )
@@ -74,11 +81,14 @@ class Producer:
         )
         for topic, future in topics.items():
             try:
+                if is_topic_exists(self.client, topic):
+                    logger.info(f"topic {topic} exists")
+                    return
                 future.result()
                 logger.info(f"topic {topic} created")
-            except Exception as e:
-                logger.error(
-                    f"topic {topic} creation kafka integration incomplete - skipping", e
+            except KafkaException as e:
+                logger.warning(
+                    f"topic {topic} creation kafka integration incomplete - skipping"
                 )
 
     def time_millis(self):
