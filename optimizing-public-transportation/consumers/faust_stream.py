@@ -4,7 +4,7 @@ import logging
 import faust
 
 logger = logging.getLogger(__name__)
-BROKER_URL = "http://localhost:29092"
+BROKER_URL = "kafka://localhost:29092"
 
 
 # Faust will ingest records from Kafka in this format
@@ -39,16 +39,16 @@ out_topic = app.topic(
     "com.transitchicago.station.tables", partitions=1, value_type=TransformedStation
 )
 
-
 # TODO: Define a Faust Table
 table = app.Table(
-   "com.transitchicago.station.tables.faust",
-   default=int,
-   partitions=1,
-   changelog_topic=out_topic,
+    "com.transitchicago.station.tables.faust",
+    default=int,
+    partitions=1,
+    changelog_topic=out_topic,
 )
 
 app.Table("uri_summary", default=int)
+
 
 #
 #

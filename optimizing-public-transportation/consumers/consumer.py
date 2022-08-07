@@ -30,51 +30,36 @@ class KafkaConsumer:
         self.consume_timeout = consume_timeout
         self.offset_earliest = offset_earliest
 
-        #
-        #
-        # TODO: Configure the broker properties below. Make sure to reference the project README
-        # and use the Host URL for Kafka and Schema Registry!
-        #
-        #
         self.broker_properties = {
-            #
-            # TODO
-            #
+            "bootstrap.servers": "PLAINTEXT://localhost:29092",
+            "group.id": "groupid",
         }
 
-        # TODO: Create the Consumer, using the appropriate type.
+        if offset_earliest:
+            self.broker_properties["auto.offset.reset"] = "earliest"
+
         if is_avro is True:
             self.broker_properties["schema.registry.url"] = "http://localhost:8081"
             self.consumer = AvroConsumer(self.broker_properties)
         else:
             self.consumer = Consumer(self.broker_properties)
 
-        #
-        #
-        # TODO: Configure the AvroConsumer and subscribe to the topics. Make sure to think about
-        # how the `on_assign` callback should be invoked.
-        #
-        #
         logger.info(self.topic_name_pattern)
 
         self.consumer.subscribe([self.topic_name_pattern], on_assign=self.on_assign)
 
     def on_assign(self, consumer, partitions):
         """Callback for when topic assignment takes place"""
-        # TODO: If the topic is configured to use `offset_earliest` set the partition offset to
-        # the beginning or earliest
-        logger.info("on_assign is incomplete - skipping")
+
         if self.offset_earliest:
             for partition in partitions:
                 partition.offset = confluent_kafka.OFFSET_BEGINNING
-            #
-            #
-            # TODO
-            #
-            #
 
         logger.info("partitions assigned for %s", self.topic_name_pattern)
-        consumer.assign(partitions)
+        try:
+            consumer.assign(partitions)
+        except Exception as e:
+            logger.error("on_assign is incomplete - skipping", e)
 
     async def consume(self):
         """Asynchronously consumes data from kafka topic"""
@@ -86,17 +71,12 @@ class KafkaConsumer:
 
     def _consume(self):
         """Polls for a message. Returns 1 if a message was received, 0 otherwise"""
-        #
-        #
-        # TODO: Poll Kafka for messages. Make sure to handle any errors or exceptions.
-        # Additionally, make sure you return 1 when a message is processed, and 0 when no message
-        # is retrieved.
-        #
-        #
         try:
             message = self.consumer.poll(self.consume_timeout)
             if message is None or message.error() is not None:
-                logger.info(f"No valid message received {message.error() if message else ''}")
+                logger.info(
+                    f"No valid message received {message.error() if message else ''}"
+                )
                 return 0
             self.message_handler(message)
             return 1
@@ -104,13 +84,6 @@ class KafkaConsumer:
             logger.error(f"Message deserialization failed", e)
             return 0
 
-
-
     def close(self):
         """Cleans up any open kafka consumers"""
-        #
-        #
-        # TODO: Cleanup the kafka consumer
-        #
-        #
         self.consumer.close()
