@@ -4,7 +4,7 @@ import logging
 import faust
 
 logger = logging.getLogger(__name__)
-BROKER_URL = "kafka://localhost:29092"
+BROKER_URL = "kafka://localhost:9092"
 
 
 # Faust will ingest records from Kafka in this format
