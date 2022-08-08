@@ -4,7 +4,6 @@ import json
 import logging
 from pathlib import Path
 import random
-import urllib.parse
 from urllib.error import HTTPError
 
 import requests
@@ -68,7 +67,7 @@ class Weather(Producer):
         self._set_weather(month)
         value_ = {
             "temperature": float(self.temp),
-            "status": int(self.status),
+            "status": self.status.name,
         }
         data = {"value_schema": json.dumps(Weather.value_schema), "records": [{"value": value_}]}
         resp = requests.post(
