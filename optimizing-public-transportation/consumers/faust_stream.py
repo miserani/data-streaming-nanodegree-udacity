@@ -58,17 +58,8 @@ table = app.Table(
 @app.agent(topic_)
 async def process(stream):
     async for s in stream:
-        line = None
-        if s.red:
-            line = "red"
-        elif s.blue:
-            line = "blue"
-        elif s.green:
-            line = "green"
-        else:
-            logger.error("No line color information")
-
-        await out_topic.send(
+        line = "red" if s.station.red else "blue" if s.station.blue else "green"
+        table[s.station_id] = TransformedStation(
             value={
                 "station_id": s.station_id,
                 "station_name": s.station_name,
