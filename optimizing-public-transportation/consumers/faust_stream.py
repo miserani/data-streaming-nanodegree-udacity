@@ -33,7 +33,7 @@ class TransformedStation(faust.Record):
 #   places it into a new topic with only the necessary information.
 app = faust.App("stations-stream", broker=BROKER_URL, store="memory://")
 # TODO: Define the input Kafka Topic. Hint: What topic did Kafka Connect output to?
-topic_ = app.topic("com.transitchicago.station.info", value_type=Station)
+topic_ = app.topic("com.transitchicago.station.stations", value_type=Station)
 # TODO: Define the output Kafka Topic
 out_topic = app.topic(
     "com.transitchicago.station.tables", partitions=1, value_type=TransformedStation
@@ -46,8 +46,6 @@ table = app.Table(
     partitions=1,
     changelog_topic=out_topic,
 )
-
-app.Table("uri_summary", default=int)
 
 
 #
