@@ -13,24 +13,24 @@ logger = logging.getLogger(__name__)
 KSQL_URL = "http://localhost:8088"
 
 KSQL_STATEMENT = """
-create table TURNSTILE (
-    STATION_ID BIGINT PRIMARY KEY,
-    STATION_NAME STRING,
-    LINE STRING
-) with (
+CREATE TABLE TURNSTILE (
+     STATION_ID BIGINT PRIMARY KEY,
+     STATION_NAME VARCHAR,
+     LINE VARCHAR
+   ) WITH (
     KAFKA_TOPIC = 'com.transitchicago.station.turnstiles',
     KEY_FORMAT = 'AVRO',
-    VALUE_FORMAT = 'AVRO'
-    PARTITIONS = 1,
+    VALUE_FORMAT = 'AVRO',
+    PARTITIONS = 1
 );
 
 CREATE TABLE TURNSTILE_SUMMARY
 WITH (VALUE_FORMAT = 'JSON') AS
     SELECT 
-        station_id as STATION_ID, 
-        COUNT(*) AS count
+        STATION_ID AS STATION_ID, 
+        COUNT(*) AS COUNT
     FROM TURNSTILE
-    GROUP BY station_id;
+    GROUP BY STATION_ID;
 """
 
 
