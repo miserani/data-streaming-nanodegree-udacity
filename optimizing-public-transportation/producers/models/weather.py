@@ -65,15 +65,26 @@ class Weather(Producer):
 
     def run(self, month):
         self._set_weather(month)
-        value_ = {
-            "temperature": float(self.temp),
-            "status": self.status.name,
-        }
-        data = {"value_schema": json.dumps(Weather.value_schema), "records": [{"value": value_}]}
         resp = requests.post(
             f"{Weather.rest_proxy_url}/topics/{self.topic_name}",
             headers={"Content-Type": "application/vnd.kafka.avro.v2+json"},
-            data=json.dumps(data),
+            data=json.dumps(
+                {
+                    "key_schema": json.dumps(Weather.key_schema),
+                    "value_schema": json.dumps(Weather.value_schema),
+                    "records": [
+                        {
+                            "key": {
+                                "timestamp": self.time_millis()
+                            },
+                            "value": {
+                                "temperature": self.temp,
+                                "status": self.status.name
+                            }
+                        }
+                    ]
+                }
+            ),
         )
         try:
             resp.raise_for_status()
