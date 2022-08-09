@@ -57,15 +57,13 @@ table = app.Table(
 #
 @app.agent(topic_)
 async def process(stream):
-    async for s in stream:
-        line = "red" if s.station.red else "blue" if s.station.blue else "green"
-        table[s.station_id] = TransformedStation(
-            value={
-                "station_id": s.station_id,
-                "station_name": s.station_name,
-                "order": s.order,
-                "line": line,
-            }
+    async for station in stream:
+        line = "red" if station.station.red else "blue" if station.station.blue else "green"
+        table[station.station_id] = TransformedStation(
+            station_id=station.station_id,
+            station_name=station.station_name,
+            order=station.order,
+            line=line,
         )
 
 
